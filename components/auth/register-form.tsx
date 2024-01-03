@@ -5,8 +5,8 @@ import React, { useState, useTransition } from 'react'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 
-import { login } from '@/actions/login'
-import { LoginSchema } from '@/schemas'
+import { register } from '@/actions/register'
+import { RegisterSchema } from '@/schemas'
 
 import { FormError } from '../form-error'
 import { FormSuccess } from '../form-success'
@@ -23,24 +23,25 @@ import { Input } from '../ui/input'
 
 import CardWrapper from './card-wrapper'
 
-const LoginForm = () => {
+const RegisterForm = () => {
   const [error, setError] = useState<string | undefined>('')
   const [success, setSuccess] = useState<string | undefined>('')
   const [isPending, startTransition] = useTransition()
 
-  const form = useForm<z.infer<typeof LoginSchema>>({
-    resolver: zodResolver(LoginSchema),
+  const form = useForm<z.infer<typeof RegisterSchema>>({
+    resolver: zodResolver(RegisterSchema),
     defaultValues: {
       email: '',
       password: '',
+      name: '',
     },
   })
 
-  const onSubmit = (values: z.infer<typeof LoginSchema>) => {
+  const onSubmit = (values: z.infer<typeof RegisterSchema>) => {
     setError('')
     setSuccess('')
     startTransition(async () => {
-      const data = await login(values)
+      const data = await register(values)
       setError(data.error)
       setSuccess(data.success)
     })
@@ -48,14 +49,32 @@ const LoginForm = () => {
 
   return (
     <CardWrapper
-      headerLabel="おかえりなさい"
-      backButtonLabel="アカウントを持っていませんか？"
-      backButtonHref="/auth/register"
+      headerLabel="アカウントの新規作成"
+      backButtonLabel="既にアカウントをお持ちですか？"
+      backButtonHref="/auth/login"
       showSocial
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>名前</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="test"
+                      type="name"
+                      disabled={isPending}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="email"
@@ -96,7 +115,7 @@ const LoginForm = () => {
           <FormError message={error} />
           <FormSuccess message={success} />
           <Button type="submit" className="w-full">
-            ログイン
+            アカウントを作成する
           </Button>
         </form>
       </Form>
@@ -104,4 +123,4 @@ const LoginForm = () => {
   )
 }
 
-export default LoginForm
+export default RegisterForm
